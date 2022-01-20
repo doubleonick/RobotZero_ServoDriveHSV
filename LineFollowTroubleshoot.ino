@@ -22,7 +22,7 @@
 #include "Adafruit_TCS34725.h"  // The library used for the Color Sensor Wireling
 
 ServoDriver servo(15);// Value passed is the address- RobotZero is always address 15
-#define BASE_SPEED  75
+#define BASE_SPEED  80
 #define HALT_SPEED 1500
 #define SerialMonitorInterface SerialUSB // for SAMD21 processors
 #define NUM_COLOR_CH 3
@@ -136,10 +136,41 @@ void loop() {
   //delay(500);
   ReadColorSensor(2);
   //delay(500);
-  //drive(HALT_SPEED + BASE_SPEED, HALT_SPEED - BASE_SPEED);
+//  left_speed = HALT_SPEED - 80;
+//  right_speed = HALT_SPEED + 80;
+//  duration = 100;
+//  drive(left_speed, right_speed, duration);
+//  left_speed = HALT_SPEED;
+//  right_speed = HALT_SPEED;
+//  duration = 500;
+//  drive(left_speed, right_speed, duration);
+//  
+//  left_speed = HALT_SPEED - 80;
+//  right_speed = HALT_SPEED - 80;
+//  duration = 500;
+//  drive(left_speed, right_speed, duration);
+//  left_speed = HALT_SPEED;
+//  right_speed = HALT_SPEED;
+//  duration = 500;
+//  drive(left_speed, right_speed, duration);
+//  
+//  left_speed = HALT_SPEED + 80;
+//  right_speed = HALT_SPEED + 80;
+//  duration = 500;
+//  drive(left_speed, right_speed, duration);
+//  left_speed = HALT_SPEED;
+//  right_speed = HALT_SPEED;
+//  duration = 500;
+//  drive(left_speed, right_speed, duration);
+
+//  drive(HALT_SPEED - BASE_SPEED, HALT_SPEED + BASE_SPEED, 50);
   LineFollow(&left_speed, &right_speed, &duration);
   drive(left_speed, right_speed, duration);
-  FastLED.show();   
+  left_speed = HALT_SPEED;
+  right_speed = HALT_SPEED;
+  duration = 10;
+  drive(left_speed, right_speed, duration);
+  //FastLED.show();   
 
 }
 
@@ -319,8 +350,8 @@ String IdentifyColor(byte port)
 }
 void LineFollow(int * servo_left_power, int * servo_right_power, int * duration)
 {
-  uint16_t white[NUM_COLOR_CH] = {68, 68, 68};//{180, 180, 180};
-  uint16_t black[NUM_COLOR_CH] = {60, 60, 60};//{75, 75, 75};
+  uint16_t white[NUM_COLOR_CH] = {50, 50, 50};//{180, 180, 180};
+  uint16_t black[NUM_COLOR_CH] = {35, 35, 35};//{75, 75, 75};
   //C = Black....
   //L = Black: pivot R
   //R = Black: pivot L
@@ -330,36 +361,11 @@ void LineFollow(int * servo_left_power, int * servo_right_power, int * duration)
   //L = White, R = White: move FWD
   //L = Black, R = White: pivot L
   //L = White, R = Black: pivot R
-  if((r[CENTER_COLOR] <= black[0] && g[CENTER_COLOR] <= black[1] && b[CENTER_COLOR] <= black[2]))
-  {
-    if((r[LEFT_COLOR] <= black[0] && g[LEFT_COLOR] <= black[1] && b[LEFT_COLOR] <= black[2]) && 
-       (r[RIGHT_COLOR] >= white[0] && g[RIGHT_COLOR] >= white[1] && b[RIGHT_COLOR] >= white[2]) )
-    {
-      SerialMonitorInterface.println("Black : Black : White... Pivot R");
-      *servo_left_power  = HALT_SPEED + BASE_SPEED;
-      *servo_right_power = HALT_SPEED + BASE_SPEED;
-      leds[1] = WHITE_LED;
-      leds[2] = BLACK_LED;
-      *duration = 500;
-    }else if((r[LEFT_COLOR] >= white[0] && g[LEFT_COLOR] >= white[1] && b[LEFT_COLOR] >= white[2]) &&
-             (r[RIGHT_COLOR] <= black[0] && g[RIGHT_COLOR] <= black[1] && b[RIGHT_COLOR] <= black[2]) )
-    {
-      SerialMonitorInterface.println("White  : Black : Black... Pivot L");
-      *servo_left_power  = HALT_SPEED - BASE_SPEED;
-      *servo_right_power = HALT_SPEED - BASE_SPEED;
-      leds[1] = BLACK_LED;
-      leds[2] = WHITE_LED;
-      *duration = 500;
-    }else
-    {
-      SerialMonitorInterface.println("Center Black, move FWD");
-      *servo_left_power  = HALT_SPEED + BASE_SPEED;
-      *servo_right_power = HALT_SPEED - BASE_SPEED;
-      leds[1] = WHITE_LED;
-      leds[2] = WHITE_LED;
-      *duration = 5;
-    }
-  }else if((r[CENTER_COLOR] >= white[0] && g[CENTER_COLOR] >= white[1] && b[CENTER_COLOR] >= white[2]))
+  *servo_left_power  = HALT_SPEED - BASE_SPEED;
+  *servo_right_power = HALT_SPEED + BASE_SPEED;
+  *duration = 50;
+
+  if((r[CENTER_COLOR] >= white[0] && g[CENTER_COLOR] >= white[1] && b[CENTER_COLOR] >= white[2]))
   {
     if((r[LEFT_COLOR] <= black[0] && g[LEFT_COLOR] <= black[1] && b[LEFT_COLOR] <= black[2]) && 
        (r[RIGHT_COLOR] <= black[0] && g[RIGHT_COLOR] <= black[1] && b[RIGHT_COLOR] <= black[2]) ) 
@@ -367,49 +373,115 @@ void LineFollow(int * servo_left_power, int * servo_right_power, int * duration)
       SerialMonitorInterface.println("Black  : White :  Black... Pivot R");
       *servo_left_power  = HALT_SPEED + BASE_SPEED;
       *servo_right_power = HALT_SPEED + BASE_SPEED;
-      leds[1] = BLACK_LED;
-      leds[2] = BLACK_LED;
       *duration = 500;
-    }else if((r[LEFT_COLOR] >= white[0] && g[LEFT_COLOR] >= white[1] && b[LEFT_COLOR] >= white[2]) && 
-             (r[RIGHT_COLOR] >= white[0] && g[RIGHT_COLOR] >= white[1] && b[RIGHT_COLOR] >= white[2]) )
-    {
-      SerialMonitorInterface.println("White  :  White  :  White... FWD");
-      *servo_left_power  = HALT_SPEED + BASE_SPEED;
-      *servo_right_power = HALT_SPEED - BASE_SPEED;
-      leds[1] = WHITE_LED;
-      leds[2] = WHITE_LED;
-      *duration = 5;
+//      leds[0] = WHITE_LED;
+//      leds[1] = BLACK_LED;
+//      leds[2] = BLACK_LED;
     }else if((r[LEFT_COLOR] <= black[0] && g[LEFT_COLOR] <= black[1] && b[LEFT_COLOR] <= black[2]) && 
              (r[RIGHT_COLOR] >= white[0] && g[RIGHT_COLOR] >= white[1] && b[RIGHT_COLOR] >= white[2]) )
     {
-      SerialMonitorInterface.println("Black  :  White  :  White... Pivot L");
+      SerialMonitorInterface.println("Black  : White :  White... Pivot L");
       *servo_left_power  = HALT_SPEED - BASE_SPEED;
       *servo_right_power = HALT_SPEED - BASE_SPEED;
-      leds[1] = BLACK_LED;
-      leds[2] = WHITE_LED;
       *duration = 500;
-    }else if((r[LEFT_COLOR] >= white[0] && g[LEFT_COLOR] >= white[1] && b[LEFT_COLOR] >= white[2]) &&
+//      leds[0] = WHITE_LED;
+//      leds[1] = BLACK_LED;
+//      leds[2] = BLACK_LED;
+    }else if((r[LEFT_COLOR] >= white[0] && g[LEFT_COLOR] >= white[0] && b[LEFT_COLOR] >= white[2]) && 
              (r[RIGHT_COLOR] <= black[0] && g[RIGHT_COLOR] <= black[1] && b[RIGHT_COLOR] <= black[2]) )
     {
-      SerialMonitorInterface.println("White  :  White  :  Black... Pivot R");
+      SerialMonitorInterface.println("White  : White :  Black... Pivot R");
       *servo_left_power  = HALT_SPEED + BASE_SPEED;
       *servo_right_power = HALT_SPEED + BASE_SPEED;
-      leds[1] = WHITE_LED;
-      leds[2] = BLACK_LED;
       *duration = 500;
-    }else
-    {
-      SerialMonitorInterface.println("Center White... FWD");
-      *servo_left_power  = HALT_SPEED + BASE_SPEED;
-      *servo_right_power = HALT_SPEED - BASE_SPEED;
-      leds[1] = BLUE_LED;
-      leds[2] = BLUE_LED;
-      *duration = 5;
+//      leds[0] = WHITE_LED;
+//      leds[1] = BLACK_LED;
+//      leds[2] = BLACK_LED;
     }
-  }else
-  {
-    SerialMonitorInterface.print("Center: ");SerialMonitorInterface.print(r[CENTER_COLOR]);SerialMonitorInterface.print(", ");SerialMonitorInterface.print(g[CENTER_COLOR]);SerialMonitorInterface.print(", ");SerialMonitorInterface.println(b[CENTER_COLOR]);
+    
   }
+
+
+//  if((r[CENTER_COLOR] <= black[0] && g[CENTER_COLOR] <= black[1] && b[CENTER_COLOR] <= black[2]))
+//  {
+//    if((r[LEFT_COLOR] <= black[0] && g[LEFT_COLOR] <= black[1] && b[LEFT_COLOR] <= black[2]) && 
+//       (r[RIGHT_COLOR] >= white[0] && g[RIGHT_COLOR] >= white[1] && b[RIGHT_COLOR] >= white[2]) )
+//    {
+//      SerialMonitorInterface.println("Black : Black : White... Pivot R");
+//      *servo_left_power  = HALT_SPEED + BASE_SPEED;
+//      *servo_right_power = HALT_SPEED + BASE_SPEED;
+//      leds[1] = WHITE_LED;
+//      leds[2] = BLACK_LED;
+//      *duration = 500;
+//    }else if((r[LEFT_COLOR] >= white[0] && g[LEFT_COLOR] >= white[1] && b[LEFT_COLOR] >= white[2]) &&
+//             (r[RIGHT_COLOR] <= black[0] && g[RIGHT_COLOR] <= black[1] && b[RIGHT_COLOR] <= black[2]) )
+//    {
+//      SerialMonitorInterface.println("White  : Black : Black... Pivot L");
+//      *servo_left_power  = HALT_SPEED - BASE_SPEED;
+//      *servo_right_power = HALT_SPEED - BASE_SPEED;
+//      leds[1] = BLACK_LED;
+//      leds[2] = WHITE_LED;
+//      *duration = 500;
+//    }else
+//    {
+//      SerialMonitorInterface.println("Center Black, move FWD");
+//      *servo_left_power  = HALT_SPEED - BASE_SPEED;
+//      *servo_right_power = HALT_SPEED + BASE_SPEED;
+//      leds[1] = WHITE_LED;
+//      leds[2] = WHITE_LED;
+//      *duration = 100;
+//    }
+//  }else if((r[CENTER_COLOR] >= white[0] && g[CENTER_COLOR] >= white[1] && b[CENTER_COLOR] >= white[2]))
+//  {
+//    if((r[LEFT_COLOR] <= black[0] && g[LEFT_COLOR] <= black[1] && b[LEFT_COLOR] <= black[2]) && 
+//       (r[RIGHT_COLOR] <= black[0] && g[RIGHT_COLOR] <= black[1] && b[RIGHT_COLOR] <= black[2]) ) 
+//    {
+//      SerialMonitorInterface.println("Black  : White :  Black... Pivot R");
+//      *servo_left_power  = HALT_SPEED + BASE_SPEED;
+//      *servo_right_power = HALT_SPEED + BASE_SPEED;
+//      leds[1] = BLACK_LED;
+//      leds[2] = BLACK_LED;
+//      *duration = 500;
+//    }else if((r[LEFT_COLOR] >= white[0] && g[LEFT_COLOR] >= white[1] && b[LEFT_COLOR] >= white[2]) && 
+//             (r[RIGHT_COLOR] >= white[0] && g[RIGHT_COLOR] >= white[1] && b[RIGHT_COLOR] >= white[2]) )
+//    {
+//      SerialMonitorInterface.println("White  :  White  :  White... FWD");
+//      *servo_left_power  = HALT_SPEED - BASE_SPEED;
+//      *servo_right_power = HALT_SPEED + BASE_SPEED;
+//      leds[1] = WHITE_LED;
+//      leds[2] = WHITE_LED;
+//      *duration = 100;
+//    }else if((r[LEFT_COLOR] <= black[0] && g[LEFT_COLOR] <= black[1] && b[LEFT_COLOR] <= black[2]) && 
+//             (r[RIGHT_COLOR] >= white[0] && g[RIGHT_COLOR] >= white[1] && b[RIGHT_COLOR] >= white[2]) )
+//    {
+//      SerialMonitorInterface.println("Black  :  White  :  White... Pivot L");
+//      *servo_left_power  = HALT_SPEED - BASE_SPEED;
+//      *servo_right_power = HALT_SPEED - BASE_SPEED;
+//      leds[1] = BLACK_LED;
+//      leds[2] = WHITE_LED;
+//      *duration = 500;
+//    }else if((r[LEFT_COLOR] >= white[0] && g[LEFT_COLOR] >= white[1] && b[LEFT_COLOR] >= white[2]) &&
+//             (r[RIGHT_COLOR] <= black[0] && g[RIGHT_COLOR] <= black[1] && b[RIGHT_COLOR] <= black[2]) )
+//    {
+//      SerialMonitorInterface.println("White  :  White  :  Black... Pivot R");
+//      *servo_left_power  = HALT_SPEED + BASE_SPEED;
+//      *servo_right_power = HALT_SPEED + BASE_SPEED;
+//      leds[1] = WHITE_LED;
+//      leds[2] = BLACK_LED;
+//      *duration = 500;
+//    }else
+//    {
+//      SerialMonitorInterface.println("Center White... FWD");
+//      *servo_left_power  = HALT_SPEED - BASE_SPEED;
+//      *servo_right_power = HALT_SPEED + BASE_SPEED;
+//      leds[1] = BLUE_LED;
+//      leds[2] = BLUE_LED;
+//      *duration = 100;
+//    }
+//  }else
+//  {
+//    SerialMonitorInterface.print("Center: ");SerialMonitorInterface.print(r[CENTER_COLOR]);SerialMonitorInterface.print(", ");SerialMonitorInterface.print(g[CENTER_COLOR]);SerialMonitorInterface.print(", ");SerialMonitorInterface.println(b[CENTER_COLOR]);
+//  }
   SerialMonitorInterface.println("LineFollow...");
   SerialMonitorInterface.print("left_speed = ");SerialMonitorInterface.print(*servo_left_power);SerialMonitorInterface.print(", right_speed = ");SerialMonitorInterface.print(*servo_right_power);SerialMonitorInterface.print(", duration = ");SerialMonitorInterface.println(*duration);
 }
@@ -422,7 +494,7 @@ void drive(int servo_left_power, int servo_right_power, int duration)
   int servo_left_port  = 1;
   int servo_right_port = 2;
 
-  servo_left_power = servo_left_power * 0.97;
+  servo_left_power = servo_left_power * 1;//0.85;
 
   servo.setServo(servo_left_port, servo_left_power);
   servo.setServo(servo_right_port, servo_right_power);
